@@ -57,13 +57,13 @@ Overview:
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone git@github.com:grazielevasconcelos/template_elk_event_driver.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd template_elk_event_driver
 ```
 
 Docker build
