@@ -132,3 +132,9 @@ Create a index
 ```bash
     monitoracao*
 ```
+
+Call a route for generate data
+
+```bash
+  curl http://localhost:3000/monitors/index
+```
