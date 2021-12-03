@@ -1,0 +1,102 @@
+version: "3.9"
+
+volumes:
+  gem_cache:
+  elasticsearch:
+  rabbitmq_data:
+
+services:
+  web:
+    build: .
+    volumes:
+      - .:/var/app
+      - gem_cache:/usr/local/bundle/gems
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    env_file: .env
+    entrypoint: entrypoint.sh
+    command: ['rails', 'server', '-p', '3000', '-b', '0.0.0.0']
+    environment:
+      RAILS_ENV: development
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - rabbitmq
+    networks:
+      - elk
+
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: rabbitmq:3.8-management-alpine
+    hostname: my-rabbit
+    environment:
+        - RABBITMQ_DEFAULT_USER=myuser
+        - RABBITMQ_DEFAULT_PASS=mypassword
+    ports:
+        # AMQP protocol port
+      - 5672:5672
+        # HTTP management UI
+      - 15672:15672
+    volumes:
+        - rabbitmq_data/:/var/lib/rabbitmq/
+    networks:
+      - elk
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: 7.14.2
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+      - elasticsearch:/usr/share/elasticsearch/data:z
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: changeme
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
+    networks:
+      - elk
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: 7.14.2
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,z
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: 7.14.2
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,z
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+networks:
+  elk:
+    driver: bridge
