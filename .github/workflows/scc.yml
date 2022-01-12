@@ -9,8 +9,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Get the lines of code.
-        id: scc
+      - name: Get the lines of code, summary.
+        id: scc-summary
         uses: iryanbell/scc-docker-action@v1.0.0
         with:
-          args: ${{ env.workspace }} --no-gitignore --no-ignore -w --avg-wage 97500 --exclude-dir .git,.hg,.svn,.bundle,.tmp,log,coverage,.gem,.github,.vscode,vendor --by-file -s complexity
+          args: ${{ env.workspace }} -w --avg-wage 97500 --exclude-dir .git,.hg,.svn,.bundle,.tmp,log,coverage,.gem,.github,.vscode,vendor,.gitignore,.dockerignore,.editorconfig,.rspec,.rubocop,.rubocop_todo.yml,Gemfile,Gemfile.lock,.ruby-version,.tool-versions -s complexity
+      - name: Get the lines of code, by-file.
+        id: scc-all-files
+        uses: iryanbell/scc-docker-action@v1.0.0
+        with:
+          args: ${{ env.workspace }} --by-file -w --avg-wage 97500 --exclude-dir .git,.hg,.svn,.bundle,.tmp,log,coverage,.gem,.github,.vscode,vendor,.gitignore,.dockerignore,.editorconfig,.rspec,.rubocop,.rubocop_todo.yml,Gemfile,Gemfile.lock,.ruby-version,.tool-versions -s complexity
