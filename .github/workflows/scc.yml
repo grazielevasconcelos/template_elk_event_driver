@@ -13,4 +13,4 @@ jobs:
         id: scc
         uses: iryanbell/scc-docker-action@v1.0.0
         with:
-          args: ${{ env.workspace }} --by-file --no-gitignore --no-ignore -w --avg-wage 97500 --exclude-dir .git,.hg,.svn,.bundle,.tmp,log,coverage,.gem,.github,.vscode,vendor -s complexity
+          args: ${{ env.workspace }} --no-gitignore --no-ignore -w --avg-wage 97500 --exclude-dir .git,.hg,.svn,.bundle,.tmp,log,coverage,.gem,.github,.vscode,vendor -s complexity
